@@ -15,17 +15,26 @@ namespace CHATServer
     {
         static void Main(string[] args)
         {
+            Socket socket = new Socket(AddressFamily.InterNetwork,
+              SocketType.Stream, ProtocolType.Tcp);
+
+            IPEndPoint endPoint = new IPEndPoint(
+                IPAddress.Any, 2345
+                );
             try
             {
-                Socket socket = new Socket(AddressFamily.InterNetwork,
-                SocketType.Stream, ProtocolType.Tcp);
-
-                IPEndPoint endPoint = new IPEndPoint(
-                    IPAddress.Any, 2345
-                    );
                 socket.Bind(endPoint);
                 socket.Listen(10);
-                socket.Accept();
+            }
+            catch
+            {
+                System.Console.WriteLine("Impossible de démarrer le serveur");
+                Environment.Exit(-1);
+            }
+
+            try
+            {
+                var clientSocket = socket.Accept();
                 if (ClientSocket.RemoteEndPoint != null)
                 {
                     while (true)
@@ -39,7 +48,15 @@ namespace CHATServer
             }
             catch
             {
-                Console.WriteLine("Une erreur s'est produite sur le serveur");
+                Console.WriteLine("La communication avec le client n'est pas possible");
+            }
+            finally
+            {
+                if (socket.Connected)
+                {     
+                    socket.Shutdown(SocketShutdown.Both);
+                }
+                socket.Close();
             }
         }
     }
